@@ -1,6 +1,50 @@
-<ul *ngIf="cityList.length>0; else loading">
-  <li *ngFor="let city of cityList">
-    {{ city.city_name }} - {{ city.prov_name }}
-  </li>
-</ul>
-<ng-template #loading>No cities found</ng-template>
+<div class="city-crud">
+  <h2>City CRUD Operations</h2>
+
+  <form (ngSubmit)="isEditMode ? saveCity() : addCity()" #cityForm="ngForm">
+    <div>
+      <label for="cityName">City</label>
+      <input id="cityName" name="city_name" [(ngModel)]="newCity.city_name" required placeholder="City name" />
+    </div>
+
+    <div>
+      <label for="provName">Province</label>
+      <input id="provName" name="prov_name" [(ngModel)]="newCity.prov_name" required placeholder="Province name" />
+    </div>
+
+    <div>
+      <button type="submit" [disabled]="!cityForm.form.valid">
+        {{ isEditMode ? 'Update City' : 'Add City' }}
+      </button>
+      <button type="button" (click)="cancelEdit()" *ngIf="isEditMode">Cancel</button>
+    </div>
+  </form>
+
+  <div *ngIf="cityList.length > 0; else noCities">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>City</th>
+          <th>Province</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let city of cityList; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ city.city_name }}</td>
+          <td>{{ city.prov_name }}</td>
+          <td>
+            <button type="button" (click)="startEdit(city, i)">Edit</button>
+            <button type="button" (click)="deleteCity(i)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noCities>
+    <p>No cities found.</p>
+  </ng-template>
+</div>
