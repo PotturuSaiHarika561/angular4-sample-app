@@ -1,11 +1,18 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
-import { RouterModule } from '@angular/router';
+
+import { RouterModule, Routes } from '@angular/router';
 
 import { AppComponent } from './app.component';
 import { CitiesComponent } from './cities/cities.component';
+
+import { CityService } from './services/city.service';
+
+const routes: Routes = [
+  { path: '', redirectTo: 'cities', pathMatch: 'full' },
+  { path: 'cities', component: CitiesComponent }
+];
 
 @NgModule({
   declarations: [
@@ -15,13 +22,9 @@ import { CitiesComponent } from './cities/cities.component';
   imports: [
     BrowserModule,
     FormsModule,
-    HttpModule,
-    RouterModule.forRoot([
-      { path: '', redirectTo: 'cities', pathMatch: 'full' },
-      { path: 'cities', component: CitiesComponent }
-    ])
+    RouterModule.forRoot(routes)
   ],
-  providers: [],
+  providers: [CityService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

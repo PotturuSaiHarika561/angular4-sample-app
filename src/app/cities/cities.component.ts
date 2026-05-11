@@ -1,89 +1,84 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-
-interface City {
-  id: number;
-  city_name: string;
-  prov_name: string;
-}
+import { Component, OnInit } from '@angular/core';
+import { City } from '../models/city.model';
+import { CityService } from '../services/city.service';
 
 @Component({
   selector: 'app-cities',
   templateUrl: './cities.component.html',
-  styleUrls: ['./cities.component.css'],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./cities.component.css']
 })
 export class CitiesComponent implements OnInit {
 
-  cityList: City[] = [
-    { id: 1, city_name: 'Bandung', prov_name: 'Jawa Barat' },
-    { id: 2, city_name: 'Jakarta', prov_name: 'DKI Jakarta' },
-    { id: 3, city_name: 'Surabaya', prov_name: 'Jawa Timur' },
-    { id: 4, city_name: 'Yogyakarta', prov_name: 'DI Yogyakarta' },
-    { id: 5, city_name: 'Semarang', prov_name: 'Jawa Tengah' },
-    { id: 6, city_name: 'Medan', prov_name: 'Sumatera Utara' },
-    { id: 7, city_name: 'Tangerang', prov_name: 'Banten' },
-    { id: 8, city_name: 'Denpasar', prov_name: 'Bali' },
-    { id: 9, city_name: 'Makasar', prov_name: 'Sulawesi Selatan' }
-  ];
+  cities: City[] = [];
+  form: City = this.empty();
+  isEdit = false;
 
-  newCity: City = { id: 0, city_name: '', prov_name: '' };
-  isEditMode = false;
-  editIndex: number | null = null;
+  search = '';
+  filtered: City[] = [];
 
-  constructor() { }
+  constructor(private cityService: CityService) {}
 
-  ngOnInit() {
-    console.log('City Component Init');
+  ngOnInit(): void {
+    this.refresh();
   }
 
-  addCity() {
-    if (!this.newCity.city_name.trim() || !this.newCity.prov_name.trim()) {
-      return;
+  refresh(): void {
+    this.cities = this.cityService.getAll();
+    this.applyFilter();
+  }
+
+  applyFilter(): void {
+  const q = (this.search || '').toLowerCase().trim();
+  if (!q) {
+    this.filtered = this.cities.slice();
+    return;
+  }
+
+  this.filtered = this.cities.filter(c =>
+    c.name.toLowerCase().indexOf(q) !== -1 ||
+    c.state.toLowerCase().indexOf(q) !== -1 ||
+    c.country.toLowerCase().indexOf(q) !== -1
+  );
+}
+
+  startAdd(): void {
+    this.isEdit = false;
+    this.form = this.empty();
+  }
+
+  startEdit(city: City): void {
+    this.isEdit = true;
+    this.form = { ...city };
+    window.scrollTo(0, 0);
+  }
+
+  save(): void {
+    if (!this.form.name || !this.form.name.trim()) { alert('City name required'); return; }
+    if (!this.form.state || !this.form.state.trim()) { alert('State required'); return; }
+    if (!this.form.country || !this.form.country.trim()) { alert('Country required'); return; }
+   if (this.form.population == null || this.form.population < 0) {
+  alert('Population must be >= 0');
+  return;
+}
+
+    if (this.isEdit) {
+      const ok = this.cityService.update(this.form);
+      if (!ok) alert('City not found!');
+    } else {
+      this.cityService.add(this.form);
     }
 
-    const nextId = this.cityList.length > 0 ? Math.max(...this.cityList.map(c => c.id)) + 1 : 1;
-    this.cityList.push({
-      id: nextId,
-      city_name: this.newCity.city_name.trim(),
-      prov_name: this.newCity.prov_name.trim()
-    });
-    this.resetForm();
+    this.refresh();
+    this.startAdd();
   }
 
-  startEdit(city: City, index: number) {
-    this.isEditMode = true;
-    this.editIndex = index;
-    this.newCity = Object.assign({}, city);
+  remove(city: City): void {
+    if (!confirm('Delete ' + city.name + '?')) return;
+    this.cityService.delete(city.id);
+    this.refresh();
   }
 
-  saveCity() {
-    if (this.editIndex === null) {
-      return;
-    }
-    if (!this.newCity.city_name.trim() || !this.newCity.prov_name.trim()) {
-      return;
-    }
-
-    this.cityList[this.editIndex] = {
-      id: this.newCity.id,
-      city_name: this.newCity.city_name.trim(),
-      prov_name: this.newCity.prov_name.trim()
-    };
-    this.resetForm();
-  }
-
-  cancelEdit() {
-    this.resetForm();
-  }
-
-  deleteCity(index: number) {
-    this.cityList.splice(index, 1);
-    this.resetForm();
-  }
-
-  private resetForm() {
-    this.isEditMode = false;
-    this.editIndex = null;
-    this.newCity = { id: 0, city_name: '', prov_name: '' };
+  private empty(): City {
+    return { id: 0, name: '', state: '', country: '', population: 0 };
   }
 }

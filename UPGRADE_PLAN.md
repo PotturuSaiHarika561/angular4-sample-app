@@ -3,14 +3,14 @@
 This plan follows the instructions in `.github/agents/angular4to5_Upgrade_agent.agent.md` and is limited to planning only.
 
 ## Current state
-- The repository is expected to be an Angular 4 project.
-- Existing dependencies should be validated from `package.json` before applying changes.
+- The repository is currently an Angular 4.4.7 project.
+- Current packages in `package.json` include Angular 4.4.7, CLI 1.4.9, TypeScript 2.3.4, RxJS 5.4.3, and zone.js 0.8.18.
 - The upgrade must preserve UI, layout, and behavior exactly.
 
 ## Upgrade objectives
 - Upgrade Angular core packages to Angular 5.2.x.
 - Keep dependency compatibility across Angular, RxJS, TypeScript, and CLI.
-- Make minimal changes required for the upgrade.
+- Apply the smallest possible changes required for the upgrade.
 - Validate build and runtime with `ng build` and `ng serve`.
 
 ## Step 1: Update dependency versions
@@ -30,7 +30,7 @@ This plan follows the instructions in `.github/agents/angular4to5_Upgrade_agent.
 - Update `zone.js` to `^0.8.14`.
 
 ## Step 2: Validate configuration
-- Confirm `tsconfig.json` and `src/tsconfig.app.json` support TypeScript 2.4.
+- Confirm `tsconfig.json` and `src/tsconfig.app.json` are compatible with TypeScript 2.4.
 - Confirm `.angular-cli.json` is compatible with Angular CLI 1.5.
 - Confirm `polyfills.ts` includes required Angular 5 polyfills.
 

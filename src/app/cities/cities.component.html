@@ -1,50 +1,83 @@
-<div class="city-crud">
-  <h2>City CRUD Operations</h2>
-
-  <form (ngSubmit)="isEditMode ? saveCity() : addCity()" #cityForm="ngForm">
+<div class="wrap">
+  <div class="top">
     <div>
-      <label for="cityName">City</label>
-      <input id="cityName" name="city_name" [(ngModel)]="newCity.city_name" required placeholder="City name" />
+      <h2>Cities CRUD (Angular 4)</h2>
+      <p class="sub">Add / Edit / Delete / Search</p>
     </div>
 
-    <div>
-      <label for="provName">Province</label>
-      <input id="provName" name="prov_name" [(ngModel)]="newCity.prov_name" required placeholder="Province name" />
+    <div class="search">
+      <input [(ngModel)]="search" (input)="applyFilter()" placeholder="Search city/state/country..." />
+      <button (click)="search=''; applyFilter()">Clear</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{ isEdit ? 'Edit City' : 'Add City' }}</h3>
+
+    <div class="grid">
+      <div class="field">
+        <label>City</label>
+        <input [(ngModel)]="form.name" placeholder="Chennai" />
+      </div>
+
+      <div class="field">
+        <label>State</label>
+        <input [(ngModel)]="form.state" placeholder="Tamil Nadu" />
+      </div>
+
+      <div class="field">
+        <label>Country</label>
+        <input [(ngModel)]="form.country" placeholder="India" />
+      </div>
+
+      <div class="field">
+        <label>Population</label>
+        <input type="number" [(ngModel)]="form.population" />
+      </div>
     </div>
 
-    <div>
-      <button type="submit" [disabled]="!cityForm.form.valid">
-        {{ isEditMode ? 'Update City' : 'Add City' }}
-      </button>
-      <button type="button" (click)="cancelEdit()" *ngIf="isEditMode">Cancel</button>
+    <div class="actions">
+      <button class="primary" (click)="save()">{{ isEdit ? 'Update' : 'Add' }}</button>
+      <button *ngIf="isEdit" (click)="startAdd()">Cancel</button>
+      <button *ngIf="!isEdit" (click)="startAdd()">Reset</button>
     </div>
-  </form>
+  </div>
 
-  <div *ngIf="cityList.length > 0; else noCities">
+  <div class="card">
+    <div class="tableHead">
+      <h3>City List</h3>
+      <span class="count">{{ filtered.length }} records</span>
+    </div>
+
     <table>
       <thead>
         <tr>
           <th>#</th>
           <th>City</th>
-          <th>Province</th>
-          <th>Actions</th>
+          <th>State</th>
+          <th>Country</th>
+          <th class="right">Population</th>
+          <th class="right">Actions</th>
         </tr>
       </thead>
+
       <tbody>
-        <tr *ngFor="let city of cityList; let i = index">
+        <tr *ngFor="let c of filtered; let i = index">
           <td>{{ i + 1 }}</td>
-          <td>{{ city.city_name }}</td>
-          <td>{{ city.prov_name }}</td>
-          <td>
-            <button type="button" (click)="startEdit(city, i)">Edit</button>
-            <button type="button" (click)="deleteCity(i)">Delete</button>
+          <td class="bold">{{ c.name }}</td>
+          <td>{{ c.state }}</td>
+          <td>{{ c.country }}</td>
+          <td class="right">{{ c.population }}</td>
+          <td class="right">
+            <button class="small" (click)="startEdit(c)">Edit</button>
+            <button class="small danger" (click)="remove(c)">Delete</button>
           </td>
+        </tr>
+
+        <tr *ngIf="filtered.length === 0">
+          <td colspan="6" class="empty">No cities found.</td>
         </tr>
       </tbody>
     </table>
   </div>
-
-  <ng-template #noCities>
-    <p>No cities found.</p>
-  </ng-template>
 </div>
