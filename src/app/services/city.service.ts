@@ -1,34 +1,27 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { City } from '../models/city.model';
 
 @Injectable()
 export class CityService {
-  private cities: City[] = [
-    { id: 1, name: 'Chennai', state: 'Tamil Nadu', country: 'India', population: 11000000 },
-    { id: 2, name: 'Hyderabad', state: 'Telangana', country: 'India', population: 10000000 }
-  ];
+  private apiUrl = 'http://localhost:3000/cities';
 
-  private nextId = 3;
+  constructor(private http: HttpClient) {}
 
-  getAll(): City[] {
-    return this.cities.slice();
+  getAll(): Observable<City[]> {
+    return this.http.get<City[]>(this.apiUrl);
   }
 
-  add(city: City): void {
-    city.id = this.nextId++;
-    this.cities.unshift({ ...city });
+  add(city: City): Observable<City> {
+    return this.http.post<City>(this.apiUrl, city);
   }
 
-  update(city: City): boolean {
-    const idx = this.cities.findIndex(c => c.id === city.id);
-    if (idx === -1) return false;
-    this.cities[idx] = { ...city };
-    return true;
+  update(city: City): Observable<City> {
+    return this.http.put<City>(`${this.apiUrl}/${city.id}`, city);
   }
 
-  delete(id: number): boolean {
-    const before = this.cities.length;
-    this.cities = this.cities.filter(c => c.id !== id);
-    return this.cities.length !== before;
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 }

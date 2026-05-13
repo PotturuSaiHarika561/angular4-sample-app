@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { City } from '../models/city.model';
 import { CityService } from '../services/city.service';
 
@@ -9,12 +11,12 @@ import { CityService } from '../services/city.service';
 })
 export class CitiesComponent implements OnInit {
 
-  cities: City[] = [];
+  cities$: Observable<City[]> = new Observable();
+  filtered$: Observable<City[]> = new Observable();
   form: City = this.empty();
   isEdit = false;
 
   search = '';
-  filtered: City[] = [];
 
   constructor(private cityService: CityService) {}
 
@@ -23,23 +25,25 @@ export class CitiesComponent implements OnInit {
   }
 
   refresh(): void {
-    this.cities = this.cityService.getAll();
+    this.cities$ = this.cityService.getAll();
     this.applyFilter();
   }
 
   applyFilter(): void {
-  const q = (this.search || '').toLowerCase().trim();
-  if (!q) {
-    this.filtered = this.cities.slice();
-    return;
-  }
+    const q = (this.search || '').toLowerCase().trim();
+    if (!q) {
+      this.filtered$ = this.cities$;
+      return;
+    }
 
-  this.filtered = this.cities.filter(c =>
-    c.name.toLowerCase().indexOf(q) !== -1 ||
-    c.state.toLowerCase().indexOf(q) !== -1 ||
-    c.country.toLowerCase().indexOf(q) !== -1
-  );
-}
+    this.filtered$ = this.cities$.pipe(map(cities =>
+      cities.filter(c =>
+        c.name.toLowerCase().indexOf(q) !== -1 ||
+        c.state.toLowerCase().indexOf(q) !== -1 ||
+        c.country.toLowerCase().indexOf(q) !== -1
+      )
+    ));
+  }
 
   startAdd(): void {
     this.isEdit = false;
@@ -61,21 +65,22 @@ export class CitiesComponent implements OnInit {
   return;
 }
 
-    if (this.isEdit) {
-      const ok = this.cityService.update(this.form);
-      if (!ok) alert('City not found!');
-    } else {
-      this.cityService.add(this.form);
-    }
-
-    this.refresh();
-    this.startAdd();
+    const operation = this.isEdit ? this.cityService.update(this.form) : this.cityService.add(this.form);
+    operation.subscribe({
+      next: () => {
+        this.refresh();
+        this.startAdd();
+      },
+      error: (err) => alert('Error saving city: ' + err.message)
+    });
   }
 
   remove(city: City): void {
     if (!confirm('Delete ' + city.name + '?')) return;
-    this.cityService.delete(city.id);
-    this.refresh();
+    this.cityService.delete(city.id).subscribe({
+      next: () => this.refresh(),
+      error: (err) => alert('Error deleting city: ' + err.message)
+    });
   }
 
   private empty(): City {

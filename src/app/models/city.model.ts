@@ -3,5 +3,5 @@ export interface City {
   name: string;
   state: string;
   country: string;
-  population?: number;
+  population: number;
 }
